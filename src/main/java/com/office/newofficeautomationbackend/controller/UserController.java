@@ -104,7 +104,7 @@ public class UserController {
      * HTTP 方法：POST
      * API 路径：/user/register
      * 功能：处理新用户注册，包含密码 BCrypt 加密逻辑
-//     * @param user 前端传入的注册信息
+     * @param registerDTO 前端传入的注册信息
      * @return 包含注册成功后用户信息的 Result 对象
      */
     @PostMapping("/register")

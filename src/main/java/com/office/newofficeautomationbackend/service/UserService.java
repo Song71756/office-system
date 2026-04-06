@@ -105,4 +105,7 @@ public interface UserService {
      * @return 是否更新成功
      */
     boolean updateAvatar(Integer id, String avatar);
+
+    //将User对象转换成UserDTO
+    UserDTO toUserDTO(User user);
 }

@@ -81,36 +81,29 @@ public class UserServiceImpl implements UserService {
         PageHelper.startPage(pageNum, pageSize);
         
         // 执行查询逻辑 (支持模糊搜索)
-        List<User> userList = userMapper.selectByKeyword(keyword);
+        List<UserDTO> userDTOList = userMapper.selectUserDTOByKeyword(keyword);
         
         // 安全处理：批量将返回的密码脱敏
-        userList.forEach(u -> u.setPassword(null));
+        userDTOList.forEach(u -> u.setPassword(null));
 
-        // 使用Page对象获取分页信息
-        Page<User> page = (Page<User>) userList;
+//        // 使用Page对象获取分页信息
+//        Page<User> page = (Page<User>) userList;
+//
+//        List<UserDTO> userDTOList = new ArrayList<>();
+//
+//        for(User user : userList){
+//            UserDTO userDTO = this.toUserDTO(user);
+//            userDTOList.add(userDTO);
+//        }
+//
+//        // 创建新的PageInfo，保留原始的分页信息
+//        PageInfo<UserDTO> pageInfo = new PageInfo<>(userDTOList);
+//        pageInfo.setPageNum(page.getPageNum());
+//        pageInfo.setPageSize(page.getPageSize());
+//        pageInfo.setTotal(page.getTotal());
+//        pageInfo.setPages(page.getPages());
         
-        List<UserDTO> userDTOList = new ArrayList<>();
-
-        for(User user : userList){
-            //封装用户信息到 DTO
-            UserDTO userDTO = new UserDTO();//创建用户DTO对象
-            BeanUtils.copyProperties(user, userDTO);
-            // 加载部门名称
-            userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
-            // 加载角色名称
-            Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
-            userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
-            userDTOList.add(userDTO);
-        }
-        
-        // 创建新的PageInfo，保留原始的分页信息
-        PageInfo<UserDTO> pageInfo = new PageInfo<>(userDTOList);
-        pageInfo.setPageNum(page.getPageNum());
-        pageInfo.setPageSize(page.getPageSize());
-        pageInfo.setTotal(page.getTotal());
-        pageInfo.setPages(page.getPages());
-        
-        return pageInfo;
+        return new PageInfo<>(userDTOList);
     }
 
     /**
@@ -125,14 +118,8 @@ public class UserServiceImpl implements UserService {
             user.setPassword(null);
         }
 
-        //封装用户信息到 DTO
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        // 加载部门名称
-        userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
-        // 加载角色名称
-        Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
-        userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
+        //转换成UserDTO
+        UserDTO userDTO = this.toUserDTO(user);
 
         return userDTO;
     }
@@ -149,14 +136,8 @@ public class UserServiceImpl implements UserService {
             user.setPassword(null);
         }
 
-        //封装用户信息到 DTO
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        // 加载部门名称
-        userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
-        // 加载角色名称
-        Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
-        userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
+        //转换成UserDTO
+        UserDTO userDTO = this.toUserDTO(user);
 
         return userDTO;
     }
@@ -247,14 +228,8 @@ public class UserServiceImpl implements UserService {
 
         // 7. 脱敏处理并封装返回
         user.setPassword(null);
-        // 8. 封装用户信息到 DTO
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        // 9. 加载部门名称
-        userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
-        // 10. 加载角色名称
-        Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
-        userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
+        // 8. 转换成UserDTO
+        UserDTO userDTO = this.toUserDTO(user);
 
 
         return new LoginResponseDTO(token, userDTO, permissionCodes);
@@ -336,5 +311,19 @@ public class UserServiceImpl implements UserService {
         redisTemplate.delete(PERMISSION_CACHE_PREFIX + userId);
 
         return true;
+    }
+
+    @Override
+    public UserDTO toUserDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(user, userDTO);
+        // 加载部门名称
+        userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
+        // 加载角色名称
+        Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
+        userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
+
+
+        return userDTO;
     }
 }

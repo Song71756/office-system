@@ -37,7 +37,7 @@ public class PermissionController {
     /**
      * 根据 ID 删除权限
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public Result<Boolean> delete(@PathVariable Integer id) {
         return Result.success(permissionService.deleteById(id));
     }

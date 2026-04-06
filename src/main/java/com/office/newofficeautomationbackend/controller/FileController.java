@@ -45,6 +45,9 @@ public class FileController {
     @Value("${file.office-path}")
     private String officePath;
 
+    @Value("${file.base-path}")
+    private String basePath;
+
     /**
      * 上传头像接口
      * 自动存入 /uploads/avatar/ 目录
@@ -90,7 +93,7 @@ public class FileController {
                 return;
             }
 
-            String absolutePathStr = "E:/TheFinishedHomwork" + fileRecord.getFilePath();
+            String absolutePathStr = basePath + fileRecord.getFilePath();
             Path path = Paths.get(absolutePathStr);
             Resource resource = new UrlResource(path.toUri());
 

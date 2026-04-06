@@ -64,7 +64,7 @@ public class DepartmentController {
      * 逻辑说明：若存在下级部门或关联员工则会抛出业务异常
      * @param id 部门 ID
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @CheckPermission("dept:delete")
     public Result<Boolean> delete(@PathVariable Integer id) {
         return Result.success("删除成功", departmentService.deleteById(id));

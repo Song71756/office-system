@@ -1,5 +1,6 @@
 package com.office.newofficeautomationbackend.mapper;
 
+import com.office.newofficeautomationbackend.dto.UserDTO;
 import com.office.newofficeautomationbackend.entity.User;
 import org.apache.ibatis.annotations.*;
 
@@ -88,6 +89,21 @@ public interface UserMapper {
      */
     @Select("SELECT * FROM sys_user WHERE username LIKE CONCAT('%', #{keyword}, '%') OR real_name LIKE CONCAT('%', #{keyword}, '%')")
     List<User> selectByKeyword(@Param("keyword") String keyword);
+
+
+    /**
+     * 根据关键词三表连接模糊查询UerDTO列表
+     * 支持匹配：用户名 (username) 或 真实姓名 (realName)
+     * @param keyword 搜索关键词
+     * @return 匹配的UserDTO列表 (PageHelper 将拦截此结果并处理分页)
+     */
+    @Select("SELECT u.*,d.name as department_name,r.role_name " +
+            "FROM sys_user u" +
+            "LEFT JOIN sys_department d ON u.department_id=d.id " +
+            "LEFT JOIN sys_user_role ur ON u.id=ur.user_id" +
+            "LEFT JOIN sys_role r ON ur.role_id=r.id" +
+            "WHERE username LIKE CONCAT('%', #{keyword}, '%') OR real_name LIKE CONCAT('%', #{keyword}, '%')")
+    List<UserDTO> selectUserDTOByKeyword(@Param("keyword") String keyword);
 
     /**
      * 更新用户的登录密码

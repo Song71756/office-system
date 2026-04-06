@@ -17,11 +17,11 @@ public class UserDTO {
         private String phone;
         private String avatar;
         private Integer departmentId;
-        private String departmentName;  // 新增字段：部门名称
-        private String roleName;  // 新增字段：角色名称
         private Integer status;
         private LocalDateTime createTime;
         private LocalDateTime updateTime;
         private LocalDateTime lastLoginTime;
+        private String departmentName;  // 新增字段：部门名称
+        private String roleName;  // 新增字段：角色名称
 
 }

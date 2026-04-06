@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.office.newofficeautomationbackend.utils.JwtUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -39,6 +40,9 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Value("${file.base-path}")
+    private String basePath;
 
     @Override
     public boolean save(File file) {
@@ -129,8 +133,8 @@ public class FileServiceImpl implements FileService {
     /**
      * 实现：物理删除逻辑
      * 1. 查库获取文件路径
-     * 2. 删除数据库记录
-     * 3. 删除磁盘物理文件
+     * 2. 删除磁盘物理文件（先删，失败则整个回滚）
+     * 3. 删除数据库记录
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -141,39 +145,30 @@ public class FileServiceImpl implements FileService {
             throw new RuntimeException("文件记录不存在，无法执行物理删除");
         }
 
-        // 2. 移除数据库记录
+        // 2. 先删除物理文件（如果失败，数据库还没动，不需要回滚）
+        try {
+            String absolutePathStr = basePath + file.getFilePath();
+            Path path = Paths.get(absolutePathStr);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException("磁盘文件删除失败: " + e.getMessage());
+        }
+
+        // 3. 物理文件删除成功后，再删除数据库记录
         int rows = fileMapper.deleteById(id);
         if (rows <= 0) {
             return false;
         }
-
-        // 3. 执行磁盘物理删除
-        // 这里的 filePath 是数据库存的相对路径，如 /uploads/office/xxx.pdf
-        // 我们需要将其转换为本地绝对路径，例如 E:/TheFinishedHomwork/uploads/office/xxx.pdf
-        try {
-            // 获取项目所在的父级根路径 (由存储逻辑推导，数据库路径包含 /uploads/)
-            // filePath 格式如: /uploads/office/uuid.jpg
-            // 拼接后的物理路径应为: E:/TheFinishedHomwork + /uploads/office/uuid.jpg
-            String absolutePathStr = "E:/TheFinishedHomwork" + file.getFilePath();
-            Path path = Paths.get(absolutePathStr);
-            
-            // 执行物理文件删除 (如果文件存在则删除)
-            boolean deleted = Files.deleteIfExists(path);
-            
-            return true; 
-        } catch (IOException e) {
-            // 如果物理文件删除失败，建议抛出异常触发数据库事务回滚，保证一致性
-            throw new RuntimeException("磁盘文件删除失败，已自动回滚数据库操作: " + e.getMessage());
-        }
+        return true;
     }
 
 
 
     /**
-     * 实现：物理删除逻辑
+     * 实现：物理删除逻辑（按新文件名）
      * 1. 查库获取文件路径
-     * 2. 删除数据库记录
-     * 3. 删除磁盘物理文件
+     * 2. 删除磁盘物理文件（先删，失败则整个回滚）
+     * 3. 删除数据库记录
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -184,30 +179,21 @@ public class FileServiceImpl implements FileService {
             throw new RuntimeException("文件记录不存在，无法执行物理删除");
         }
 
-        // 2. 移除数据库记录
+        // 2. 先删除物理文件（如果失败，数据库还没动，不需要回滚）
+        try {
+            String absolutePathStr = basePath + file.getFilePath();
+            Path path = Paths.get(absolutePathStr);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException("磁盘文件删除失败: " + e.getMessage());
+        }
+
+        // 3. 物理文件删除成功后，再删除数据库记录
         int rows = fileMapper.deleteByNewFileName(newFileName);
         if (rows <= 0) {
             return false;
         }
-
-        // 3. 执行磁盘物理删除
-        // 这里的 filePath 是数据库存的相对路径，如 /uploads/office/xxx.pdf
-        // 我们需要将其转换为本地绝对路径，例如 E:/TheFinishedHomwork/uploads/office/xxx.pdf
-        try {
-            // 获取项目所在的父级根路径 (由存储逻辑推导，数据库路径包含 /uploads/)
-            // filePath 格式如: /uploads/office/uuid.jpg
-            // 拼接后的物理路径应为: E:/TheFinishedHomwork + /uploads/office/uuid.jpg
-            String absolutePathStr = "E:/TheFinishedHomwork" + file.getFilePath();
-            Path path = Paths.get(absolutePathStr);
-
-            // 执行物理文件删除 (如果文件存在则删除)
-            boolean deleted = Files.deleteIfExists(path);
-
-            return true;
-        } catch (IOException e) {
-            // 如果物理文件删除失败，建议抛出异常触发数据库事务回滚，保证一致性
-            throw new RuntimeException("磁盘文件删除失败，已自动回滚数据库操作: " + e.getMessage());
-        }
+        return true;
     }
 
 
