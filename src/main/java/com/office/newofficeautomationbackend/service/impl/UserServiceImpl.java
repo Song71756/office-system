@@ -272,6 +272,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean update(User user) {
         User existingUser = userMapper.getById(user.getId());
+        if (existingUser == null) {
+            throw new RuntimeException("用户不存在");
+        }
         if (user.getStatus() == null) {
             user.setStatus(existingUser.getStatus());
         }
@@ -316,13 +319,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO toUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
+        if (user == null) {
+            return userDTO;
+        }
         BeanUtils.copyProperties(user, userDTO);
-        // 加载部门名称
-        userDTO.setDepartmentName(departmentService.getById(user.getDepartmentId()).getName());
-        // 加载角色名称
-        Integer roleId = userMapper.getRoleIdByUserId(user.getId());//根据用户id查询用户角色id
-        userDTO.setRoleName(roleService.getById(roleId).getRoleName());//根据角色id查询角色名称
-
+        // 加载部门名称（安全检查，防止部门被删除导致NPE）
+        if (user.getDepartmentId() != null) {
+            var dept = departmentService.getById(user.getDepartmentId());
+            userDTO.setDepartmentName(dept != null ? dept.getName() : null);
+        }
+        // 加载角色名称（安全检查，防止角色被删除导致NPE）
+        Integer roleId = userMapper.getRoleIdByUserId(user.getId());
+        if (roleId != null) {
+            var role = roleService.getById(roleId);
+            userDTO.setRoleName(role != null ? role.getRoleName() : null);
+        }
 
         return userDTO;
     }
