@@ -20,7 +20,7 @@ export function savePermission(data) {
 // 删除权限
 export function deletePermission(id) {
   return request({
-    url: `/permission/${id}`,
+    url: `/permission/delete/${id}`,
     method: 'delete'
   })
 }

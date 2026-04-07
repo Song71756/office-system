@@ -70,14 +70,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public boolean saveOrUpdate(Department department) {
         if (department.getId() == null) {
-            // 新增逻辑：默认父 ID 为 0 (顶层)，初始化时间戳
-            if (department.getParentId() == null) {
-                department.setParentId(0);
+            if(department.getParentId() ==0){
+                department.setParentId(null);
             }
+            // 新增逻辑：初始化时间戳
             department.setCreateTime(LocalDateTime.now());
             department.setUpdateTime(LocalDateTime.now());
             return departmentMapper.insert(department) > 0;
         } else {
+            if(department.getParentId() ==0){
+                department.setParentId(null);
+            }
             // 更新逻辑：维护更新时间
             department.setUpdateTime(LocalDateTime.now());
             return departmentMapper.update(department) > 0;

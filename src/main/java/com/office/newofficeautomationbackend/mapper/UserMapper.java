@@ -69,7 +69,7 @@ public interface UserMapper {
      * @param user 包含更新信息的用户实体 (必须包含有效的 id)
      * @return 受影响的行数 (1 表示更新成功)
      */
-    @Update("UPDATE sys_user SET username=#{username}, real_name=#{realName}, email=#{email}, phone=#{phone}, avatar=#{avatar}, status=#{status}, update_time=#{updateTime} WHERE id=#{id}")
+    @Update("UPDATE sys_user SET username=#{username}, real_name=#{realName}, email=#{email}, phone=#{phone}, avatar=#{avatar}, department_id=#{departmentId},status=#{status}, update_time=#{updateTime} WHERE id=#{id}")
     int update(User user);
 
     /**
@@ -92,16 +92,16 @@ public interface UserMapper {
 
 
     /**
-     * 根据关键词三表连接模糊查询UerDTO列表
+     * 根据关键词三表连接模糊查询UerDTO列表 (优 化 N+1 问 题)
      * 支持匹配：用户名 (username) 或 真实姓名 (realName)
      * @param keyword 搜索关键词
      * @return 匹配的UserDTO列表 (PageHelper 将拦截此结果并处理分页)
      */
     @Select("SELECT u.*,d.name as department_name,r.role_name " +
-            "FROM sys_user u" +
+            "FROM sys_user u " +
             "LEFT JOIN sys_department d ON u.department_id=d.id " +
-            "LEFT JOIN sys_user_role ur ON u.id=ur.user_id" +
-            "LEFT JOIN sys_role r ON ur.role_id=r.id" +
+            "LEFT JOIN sys_user_role ur ON u.id=ur.user_id " +
+            "LEFT JOIN sys_role r ON ur.role_id=r.id " +
             "WHERE username LIKE CONCAT('%', #{keyword}, '%') OR real_name LIKE CONCAT('%', #{keyword}, '%')")
     List<UserDTO> selectUserDTOByKeyword(@Param("keyword") String keyword);
 

@@ -52,9 +52,9 @@
         </el-form-item>
         <el-form-item label="类型" prop="type">
           <el-select v-model="formData.type" style="width: 100%">
-            <el-option label="目录" value="M" />
-            <el-option label="菜单" value="C" />
-            <el-option label="按钮" value="F" />
+            <el-option label="菜单" value="1" />
+            <el-option label="按钮" value="2" />
+            <el-option label="接口" value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="上级权限">
@@ -145,7 +145,7 @@ const resetForm = () => {
   formData.id = null
   formData.permissionName = ''
   formData.permissionCode = ''
-  formData.type = 'F'
+  formData.type = '3'
   formData.parentId = 0
   formData.path = ''
   formData.icon = ''
@@ -167,7 +167,7 @@ const handleEdit = (row) => {
     id: row.id,
     permissionName: row.permissionName,
     permissionCode: row.permissionCode,
-    type: row.type || 'F',
+    type: row.type || '3',
     parentId: row.parentId || 0,
     path: row.path || '',
     icon: row.icon || '',
@@ -212,11 +212,11 @@ const handleDelete = (row) => {
 
 // ===== 工具方法 =====
 const typeText = (t) => {
-  const map = { M: '目录', C: '菜单', F: '按钮' }
+  const map = { 3: '接口', 1: '菜单', 2: '按钮' }
   return map[t] || '未知'
 }
 const typeTagType = (t) => {
-  const map = { M: '', C: 'success', F: 'warning' }
+  const map = { 3: '', 1: 'success', 2: 'warning' }
   return map[t] || 'info'
 }
 

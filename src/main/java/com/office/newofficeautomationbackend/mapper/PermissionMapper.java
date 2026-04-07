@@ -64,4 +64,12 @@ public interface PermissionMapper {
             "INNER JOIN sys_user_role ur ON rp.role_id = ur.role_id " +
             "WHERE ur.user_id = #{userId}")
     List<Permission> selectPermissionsByUserId(Integer userId);
+
+    /**
+     * 统计某权限下有多少子权限
+     * @param id 父权限 ID
+     * @return 子权限数量
+     */
+    @Select("SELECT COUNT(*) FROM sys_permission WHERE parent_id = #{id}")
+    int countChildren(Integer id);
 }

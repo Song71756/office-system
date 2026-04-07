@@ -43,4 +43,11 @@ public interface PermissionService {
      * @return 该用户拥有的所有权限对象集合
      */
     List<Permission> getPermissionsByUserId(Integer userId);
+
+    /**
+     * 统计某权限下有多少子权限
+     * @param id 父权限 ID
+     * @return 子权限数量
+     */
+    int countChildren(Integer id);
 }

@@ -43,11 +43,17 @@ public class PermissionServiceImpl implements PermissionService {
     public boolean saveOrUpdate(Permission permission) {
         if (permission.getId() == null) {
             // 新增：设置初始时间戳
+            if (permission.getParentId() != null && permission.getParentId() == 0) {
+                permission.setParentId(null);
+            }
             permission.setCreateTime(LocalDateTime.now());
             permission.setUpdateTime(LocalDateTime.now());
             return permissionMapper.insert(permission) > 0;
         } else {
             // 更新：维护更新时间戳
+            if (permission.getParentId() != null && permission.getParentId() == 0) {
+                permission.setParentId(null);
+            }
             permission.setUpdateTime(LocalDateTime.now());
             return permissionMapper.update(permission) > 0;
         }
@@ -55,9 +61,15 @@ public class PermissionServiceImpl implements PermissionService {
 
     /**
      * 实现：删除指定权限
+     * 删除前检查是否有子权限，有则不允许删除
      */
     @Override
     public boolean deleteById(Integer id) {
+        // 1. 检查是否有子权限
+        if (permissionMapper.countChildren(id) > 0) {
+            throw new RuntimeException("该权限下有子权限，请先删除子权限");
+        }
+        // 2. 执行删除
         return permissionMapper.deleteById(id) > 0;
     }
 
@@ -68,5 +80,13 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public List<Permission> getPermissionsByUserId(Integer userId) {
         return permissionMapper.selectPermissionsByUserId(userId);
+    }
+
+    /**
+     * 实现：统计某权限下有多少子权限
+     */
+    @Override
+    public int countChildren(Integer id) {
+        return permissionMapper.countChildren(id);
     }
 }

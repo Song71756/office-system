@@ -289,9 +289,14 @@ public class UserServiceImpl implements UserService {
     /**
      * 实现：执行用户物理删除操作
      * 基于主键 ID 从数据库表中永久性移除该用户对应的记录
+     * 注意：需先删除该用户的角色关联，否则受外键约束无法删除
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteById(Integer id) {
+        // 1. 先删除该用户的角色关联（解除外键约束）
+        userMapper.deleteUserRoles(id);
+        // 2. 再删除用户记录
         return userMapper.deleteById(id) > 0;
     }
 

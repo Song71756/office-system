@@ -36,7 +36,7 @@ export function saveDepartment(data) {
 // 删除部门
 export function deleteDepartment(id) {
   return request({
-    url: `/department/${id}`,
+    url: `/department/delete/${id}`,
     method: 'delete'
   })
 }
