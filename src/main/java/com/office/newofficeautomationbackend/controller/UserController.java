@@ -112,6 +112,10 @@ public class UserController {
         User user = new User();
         user.setUsername(registerDTO.getUsername());
         user.setPassword(registerDTO.getPassword());
+        user.setRealName(registerDTO.getRealName());
+        user.setEmail(registerDTO.getEmail());
+        user.setPhone(registerDTO.getPhone());
+        ;
         User registeredUser = userService.register(user);
         return Result.success("注册成功", registeredUser);
     }
