@@ -47,7 +47,6 @@ dist-ssr/
 
 # 包含敏感信息的环境配置文件
 application-dev.properties
-application-prod.properties
 
 ### 补充后端可能漏掉的 ###
 # 日志文件
