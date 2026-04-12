@@ -2,6 +2,7 @@ package com.office.newofficeautomationbackend.controller;
 
 import com.office.newofficeautomationbackend.common.Result;
 import com.office.newofficeautomationbackend.common.annotation.CheckPermission;
+import com.office.newofficeautomationbackend.common.annotation.Logical;
 import com.office.newofficeautomationbackend.dto.LoginDTO;
 import com.office.newofficeautomationbackend.dto.LoginResponseDTO;
 import com.office.newofficeautomationbackend.dto.RegisterDTO;
@@ -209,6 +210,13 @@ public class UserController {
     @PutMapping("/edit")
     @CheckPermission("user:edit")
     public Result<Boolean> update(@RequestBody User user) {
+        return Result.success(userService.update(user));
+    }
+
+    //个人信息修改
+    @PutMapping("/editMyself")
+    @CheckPermission("edit:myself")
+    public Result<Boolean> updateMyself(@RequestBody User user) {
         return Result.success(userService.update(user));
     }
 

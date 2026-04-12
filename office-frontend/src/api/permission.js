@@ -24,3 +24,18 @@ export function deletePermission(id) {
     method: 'delete'
   })
 }
+//根据角色id获取权限列表
+export function getPermissionByRoleId(roleId) {
+  return request({
+    url: `/permission/role/${roleId}`,
+    method: 'get'
+  })
+}
+
+//获取所有角色的权限列表
+export function getAllRolePermissions() {
+  return request({
+    url: '/permission/roles/all',
+    method: 'get'
+  })
+}

@@ -51,6 +51,14 @@ export function updateUser(data) {
   })
 }
 
+//更新个人信息
+export function updateMyself(data) {
+  return request({
+    url: '/user/editMyself',
+    method: 'put',
+    data
+  })
+}
 
 // 删除用户
 export function deleteUser(id) {

@@ -1,13 +1,17 @@
 package com.office.newofficeautomationbackend.service.impl;
 
 import com.office.newofficeautomationbackend.entity.Permission;
+import com.office.newofficeautomationbackend.entity.Role;
 import com.office.newofficeautomationbackend.mapper.PermissionMapper;
+import com.office.newofficeautomationbackend.mapper.RoleMapper;
 import com.office.newofficeautomationbackend.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 权限管理业务逻辑实现类
@@ -17,6 +21,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Autowired
     private PermissionMapper permissionMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     /**
      * 实现：获取所有权限记录
@@ -88,5 +95,31 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public int countChildren(Integer id) {
         return permissionMapper.countChildren(id);
+    }
+
+    /**
+     * 实现：根据角色 ID 获取权限编码与权限名称的映射
+     */
+    @Override
+    public Map<String, String> getPermissionMapByRoleId(Integer roleId) {
+        List<Permission> permissions = permissionMapper.selectPermissionsByRoleId(roleId);
+        Map<String, String> map = new LinkedHashMap<>();
+        for (Permission p : permissions) {
+            map.put(p.getPermissionCode(), p.getPermissionName());
+        }
+        return map;
+    }
+
+    /**
+     * 实现：获取所有角色对应的权限编码与权限名称的映射
+     */
+    @Override
+    public Map<String, Map<String, String>> getAllRolePermissionMap() {
+        List<Role> roles = roleMapper.list();
+        Map<String, Map<String, String>> result = new LinkedHashMap<>();
+        for (Role role : roles) {
+            result.put(role.getRoleName(), getPermissionMapByRoleId(role.getId()));
+        }
+        return result;
     }
 }

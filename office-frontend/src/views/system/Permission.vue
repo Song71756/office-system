@@ -12,33 +12,56 @@
       </div>
     </el-card>
 
-    <!-- 权限树形表格 -->
+    <!-- Tab 切换 -->
     <el-card shadow="hover" style="margin-top: 16px">
-      <el-table :data="permTree" row-key="id" border default-expand-all :tree-props="{ children: 'children' }">
-        <el-table-column prop="permissionName" label="权限名称" min-width="180" />
-        <el-table-column prop="permissionCode" label="权限编码" width="180" />
-        <el-table-column label="类型" width="90">
-          <template #default="{ row }">
-            <el-tag size="small" :type="typeTagType(row.type)">{{ typeText(row.type) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="path" label="路径" width="160" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.path || '-' }}</template>
-        </el-table-column>
-        <el-table-column prop="icon" label="图标" width="100">
-          <template #default="{ row }">{{ row.icon || '-' }}</template>
-        </el-table-column>
-        <el-table-column prop="sort" label="排序" width="70">
-          <template #default="{ row }">{{ row.sort ?? 0 }}</template>
-        </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
-          <template #default="{ row }">
-            <el-button type="success" link size="small" @click="handleAdd(row)">新增子权限</el-button>
-            <el-button type="warning" link size="small" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-tabs v-model="activeTab" class="perm-tabs">
+        <!-- 权限树形表格 -->
+        <el-tab-pane label="权限管理" name="permManage">
+          <el-table :data="permTree" row-key="id" border default-expand-all :tree-props="{ children: 'children' }">
+            <el-table-column prop="permissionName" label="权限名称" min-width="180" />
+            <el-table-column prop="permissionCode" label="权限编码" width="180" />
+            <el-table-column label="类型" width="90">
+              <template #default="{ row }">
+                <el-tag size="small" :type="typeTagType(row.type)">{{ typeText(row.type) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="path" label="路径" width="160" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.path || '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="icon" label="图标" width="100">
+              <template #default="{ row }">{{ row.icon || '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="sort" label="排序" width="70">
+              <template #default="{ row }">{{ row.sort ?? 0 }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="240" fixed="right">
+              <template #default="{ row }">
+                <el-button type="success" link size="small" @click="handleAdd(row)">新增子权限</el-button>
+                <el-button type="warning" link size="small" @click="handleEdit(row)">编辑</el-button>
+                <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <!-- 角色权限列表 -->
+        <el-tab-pane label="角色权限列表" name="rolePermList">
+          <div class="role-perm-header">
+            <el-button @click="loadRolePermData">
+              <el-icon><Refresh /></el-icon> 刷新
+            </el-button>
+          </div>
+          <el-table :data="rolePermList" border stripe>
+            <el-table-column prop="roleName" label="角色" width="150" fixed />
+            <el-table-column v-for="perm in allPermsForMatrix" :key="perm.code" :label="perm.name" min-width="100" align="center">
+              <template #default="{ row }">
+                <el-tag v-if="perm.code in row.permissionCodes" type="success" size="small">有</el-tag>
+                <el-tag v-else type="info" size="small">无</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
@@ -84,11 +107,48 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getPermissionList, savePermission, deletePermission } from '@/api/permission'
+import { getPermissionList, savePermission, deletePermission, getAllRolePermissions } from '@/api/permission'
 
 // ===== 数据 =====
 const permTree = ref([])
 const flatPermList = ref([])
+
+// ===== 角色权限列表 =====
+const activeTab = ref('permManage')
+const rolePermList = ref([])
+const allPermsForMatrix = ref([])
+
+const loadRolePermData = async () => {
+  try {
+    const res = await getAllRolePermissions()
+    const data = res.data || {}
+    // data 结构: { roleName: { permissionCode: permissionName } }
+    const roles = Object.keys(data)
+    const permMap = {} // { permissionCode: permissionName }
+
+    // 收集所有权限并转换为表格数据
+    roles.forEach(roleName => {
+      const perms = data[roleName]
+      Object.entries(perms).forEach(([code, name]) => {
+        if (!permMap[code]) permMap[code] = name
+      })
+    })
+
+    // 转换为表格行数据
+    rolePermList.value = roles.map(roleName => ({
+      roleName,
+      permissionCodes: data[roleName]
+    }))
+
+    // 所有权限列
+    allPermsForMatrix.value = Object.entries(permMap).map(([code, name]) => ({
+      code,
+      name
+    }))
+  } catch (error) {
+    // 错误已在拦截器中处理
+  }
+}
 
 // 将扁平列表转为树形结构
 const buildTree = (list) => {
@@ -223,6 +283,7 @@ const typeTagType = (t) => {
 // ===== 初始化 =====
 onMounted(() => {
   loadData()
+  loadRolePermData()
 })
 </script>
 
@@ -233,5 +294,11 @@ onMounted(() => {
 .toolbar {
   display: flex;
   gap: 10px;
+}
+.perm-tabs {
+  min-height: 400px;
+}
+.role-perm-header {
+  margin-bottom: 12px;
 }
 </style>

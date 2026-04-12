@@ -103,7 +103,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getCurrentUser, updateUser } from '@/api/user'
+import { getCurrentUser, updateMyself } from '@/api/user'
 
 const formRef = ref(null)
 const loading = ref(false)
@@ -211,7 +211,7 @@ const handleSubmit = async () => {
     if (!valid) return
 
     loading.value = true
-    await updateUser(formData)
+    await updateMyself(formData)
     ElMessage.success('个人信息更新成功')
     
     // 更新本地存储的用户信息

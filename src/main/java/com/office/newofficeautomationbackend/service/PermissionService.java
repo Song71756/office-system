@@ -2,6 +2,7 @@ package com.office.newofficeautomationbackend.service;
 
 import com.office.newofficeautomationbackend.entity.Permission;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 权限管理业务逻辑接口
@@ -50,4 +51,17 @@ public interface PermissionService {
      * @return 子权限数量
      */
     int countChildren(Integer id);
+
+    /**
+     * 根据角色 ID 获取该角色拥有的权限列表（权限编码 -> 权限名称）
+     * @param roleId 角色 ID
+     * @return 权限编码与权限名称的映射
+     */
+    Map<String, String> getPermissionMapByRoleId(Integer roleId);
+
+    /**
+     * 获取所有角色对应的权限列表（角色名称 -> 权限编码与权限名称的映射）
+     * @return 所有角色的权限映射
+     */
+    Map<String, Map<String, String>> getAllRolePermissionMap();
 }
