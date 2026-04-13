@@ -35,10 +35,28 @@ export function saveSchedule(data) {
   })
 }
 
+
+// 新增或编辑个人日程
+export function saveMySchedule(data) {
+  return request({
+    url: '/schedule/save/myself',
+    method: 'post',
+    data
+  })
+}
+
 // 删除日程
 export function deleteSchedule(id) {
   return request({
     url: `/schedule/delete/${id}`,
+    method: 'delete'
+  })
+}
+
+// 删除个人日程
+export function deleteMySchedule(id) {
+  return request({
+    url: `/schedule/delete/myself/${id}`,
     method: 'delete'
   })
 }

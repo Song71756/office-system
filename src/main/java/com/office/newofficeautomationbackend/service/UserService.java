@@ -108,4 +108,7 @@ public interface UserService {
 
     //将User对象转换成UserDTO
     UserDTO toUserDTO(User user);
+
+    //重置用户密码
+    boolean resetPwdById(Integer id,String newPassword);
 }

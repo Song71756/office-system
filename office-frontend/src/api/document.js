@@ -35,6 +35,15 @@ export function saveDocument(data) {
   })
 }
 
+// 起草或修改个人公文
+export function saveMyDocument(data) {
+  return request({
+    url: '/document/save/myself',
+    method: 'post',
+    data
+  })
+}
+
 // 提交公文审核
 export function submitDocument(id) {
   return request({
@@ -56,6 +65,14 @@ export function approveDocument(id, data) {
 export function deleteDocument(id) {
   return request({
     url: `/document/delete/${id}`,
+    method: 'delete'
+  })
+}
+
+// 删除个人公文
+export function deleteMyDocument(id) {
+  return request({
+    url: `/document/delete/myself/${id}`,
     method: 'delete'
   })
 }

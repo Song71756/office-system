@@ -48,6 +48,7 @@
           <template #default="{ row }">
             <el-button type="warning" link size="small" v-if="hasPermission('user:edit')" @click="handleEdit(row)">编辑</el-button>
             <el-button type="primary" link size="small" @click="handleAssignRole(row)">分配角色</el-button>
+            <el-button type="info" link size="small" v-if="hasPermission('user:reset')" @click="handleResetPassword(row)">重置密码</el-button>
             <el-button type="danger" link size="small" v-if="hasPermission('user:delete')" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -130,7 +131,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUserPage, createUser, updateUser, deleteUser, assignRoles } from '@/api/user'
+import { getUserPage, createUser, updateUser, deleteUser, assignRoles, resetPassword } from '@/api/user'
 import { getRoleList } from '@/api/role'
 import { getDepartmentList } from '@/api/department'
 
@@ -320,6 +321,59 @@ const loadDepartmentList = async () => {
   } catch (error) {
     // 错误已在拦截器中处理
   }
+}
+
+// ===== 重置密码 =====
+const handleResetPassword = async (row) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要重置用户「${row.username}」的密码吗？重置后系统将生成随机密码，请妥善保存。`,
+      '重置密码确认',
+      {
+        confirmButtonText: '确定重置',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    // 生成8位随机密码（字母+数字）
+    const randomPassword = generateRandomPassword(8)
+    
+    // 调用重置密码API
+    await resetPassword(row.id, randomPassword)
+    
+    // 显示新密码给管理员
+    ElMessageBox.alert(
+      `用户「${row.username}」的密码已重置成功！<br><br>
+      新密码：<strong>${randomPassword}</strong><br><br>
+      请务必保存此密码，关闭后将无法再次查看。`,
+      '重置密码成功',
+      {
+        confirmButtonText: '复制密码',
+        dangerouslyUseHTMLString: true,
+        callback: () => {
+          // 复制密码到剪贴板
+          navigator.clipboard.writeText(randomPassword)
+          ElMessage.success('密码已复制到剪贴板')
+        }
+      }
+    )
+  } catch (error) {
+    // 用户取消或API错误
+    if (error !== 'cancel' && error !== 'close') {
+      // 错误已在拦截器中处理
+    }
+  }
+}
+
+// 生成随机密码函数
+const generateRandomPassword = (length) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let password = ''
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return password
 }
 </script>
 

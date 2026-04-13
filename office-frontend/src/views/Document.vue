@@ -32,7 +32,7 @@
               <el-button @click="resetQuery">
                 <el-icon><Refresh /></el-icon> 重置
               </el-button>
-              <el-button type="success" v-if="hasPermission('document:create')" @click="handleAdd">
+              <el-button type="success" v-if="((hasPermission('document:create'))||(hasPermission('document:create:myself')&&queryParams.personal === true))" @click="handleAdd">
                 <el-icon><Plus /></el-icon> 起草公文
               </el-button>
             </el-form-item>
@@ -66,10 +66,10 @@
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleView(row)">查看</el-button>
-            <el-button type="warning" link size="small" v-if="hasPermission('document:edit') && row.status === 0" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="success" link size="small" v-if="hasPermission('document:edit') && row.status === 0" @click="handleSubmit(row)">提交审核</el-button>
+            <el-button type="warning" link size="small" v-if="((hasPermission('document:edit'))||(hasPermission('document:edit:myself')&&queryParams.personal === true)) && row.status === 0" @click="handleEdit(row)">编辑</el-button>
+            <el-button type="success" link size="small" v-if="((hasPermission('document:edit'))||(hasPermission('document:edit:myself')&&queryParams.personal === true)) && row.status === 0" @click="handleSubmit(row)">提交审核</el-button>
             <el-button type="primary" link size="small" v-if="hasPermission('document:approve') && row.status === 1" @click="handleApprove(row)">审批</el-button>
-            <el-button type="danger" link size="small" v-if="hasPermission('document:delete')" @click="handleDelete(row)">删除</el-button>
+            <el-button type="danger" link size="small" v-if="((hasPermission('document:delete'))||(hasPermission('document:delete:myself')&&queryParams.personal === true))" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -175,7 +175,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getDocumentPage, saveDocument, submitDocument, approveDocument, deleteDocument,getMyDocumentPages } from '@/api/document'
+import { getDocumentPage, saveDocument, submitDocument, approveDocument, deleteDocument,getMyDocumentPages,deleteMyDocument,saveMyDocument } from '@/api/document'
 
 // ===== 权限 =====
 const permissions = JSON.parse(localStorage.getItem('permissions') || '[]')
@@ -288,7 +288,7 @@ const handleSave = (targetStatus) => {
     submitLoading.value = true
     try {
       const data = { ...formData, status: targetStatus }
-      await saveDocument(data)
+      await queryParams.personal ? saveMyDocument(data) : saveDocument(data)
       ElMessage.success(targetStatus === 2 ? '发布成功' : '保存成功')
       formDialogVisible.value = false
       loadData()
@@ -366,7 +366,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await deleteDocument(row.id)
+      await queryParams.personal ? deleteMyDocument(row.id) : deleteDocument(row.id)
       ElMessage.success('删除成功')
       loadData()
     } catch (error) {

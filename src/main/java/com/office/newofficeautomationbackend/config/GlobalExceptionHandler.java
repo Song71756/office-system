@@ -1,5 +1,6 @@
 package com.office.newofficeautomationbackend.config;
 
+import com.office.newofficeautomationbackend.common.BusinessException;
 import com.office.newofficeautomationbackend.common.Result;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * 全局异常处理器
- * 捕获参数校验异常，返回统一的错误响应格式
+ * 捕获参数校验异常和业务异常，返回统一的错误响应格式
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,5 +19,10 @@ public class GlobalExceptionHandler {
         FieldError fieldError = e.getBindingResult().getFieldError();
         String message = (fieldError != null) ? fieldError.getDefaultMessage() : "参数校验失败";
         return Result.error(message);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public Result<String> handleBusinessException(BusinessException e) {
+        return Result.error(e.getMessage());
     }
 }

@@ -27,7 +27,7 @@
           <el-button @click="resetQuery">
             <el-icon><Refresh /></el-icon> 重置
           </el-button>
-          <el-button type="success" v-if="hasPermission('schedule:create')" @click="handleAdd">
+          <el-button type="success" v-if="(hasPermission('schedule:create'))||(hasPermission('schedule:create:myself')&&activeTab === 'my')"  @click="handleAdd">
             <el-icon><Plus /></el-icon> 新建日程
           </el-button>
         </el-form-item>
@@ -71,8 +71,8 @@
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleView(row)">查看</el-button>
-            <el-button type="warning" link size="small" v-if="hasPermission('schedule:edit')" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link size="small" v-if="hasPermission('schedule:delete')" @click="handleDelete(row)">删除</el-button>
+            <el-button type="warning" link size="small" v-if="(hasPermission('schedule:edit'))||(hasPermission('schedule:edit:myself')&&activeTab === 'my')" @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" link size="small" v-if="(hasPermission('schedule:delete'))||(hasPermission('schedule:delete:myself')&&activeTab === 'my')" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -208,7 +208,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMySchedulePage, getAllSchedulePage, saveSchedule, deleteSchedule } from '@/api/schedule'
+import { getMySchedulePage, getAllSchedulePage, saveSchedule, deleteSchedule, saveMySchedule, deleteMySchedule } from '@/api/schedule'
 
 // ===== 权限 =====
 const permissions = JSON.parse(localStorage.getItem('permissions') || '[]')
@@ -340,7 +340,7 @@ const handleSubmit = () => {
     if (!valid) return
     submitLoading.value = true
     try {
-      await saveSchedule(formData)
+      await activeTab.value === 'my' ? saveMySchedule(formData) : saveSchedule(formData)
       ElMessage.success(isEdit.value ? '编辑成功' : '新建成功')
       formDialogVisible.value = false
       loadData()
@@ -360,7 +360,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await deleteSchedule(row.id)
+      await activeTab.value === 'my' ? deleteMySchedule(row.id) : deleteSchedule(row.id)
       ElMessage.success('删除成功')
       loadData()
     } catch (error) {

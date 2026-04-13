@@ -116,12 +116,25 @@ public class DocumentController {
     }
 
     /**
+     * 起草或修改个人公文
+     * 逻辑：如果 ID 为空则新增，否则修改。新增时会自动关联当前登录用户为创建者。
+     * 权限要求：document:create:myself 或 document:edit:myself
+     */
+    @PostMapping("/save/myself")
+    @CheckPermission(value = {"document:create:myself", "document:edit:myself"}, logical = Logical.OR)
+    public Result<Boolean> saveMyDocument(@RequestBody Document document,
+                                @RequestHeader("Authorization") String token) {
+        String username = jwtUtils.getUsernameFromToken(token);
+        return Result.success("公文保存成功", documentService.saveOrUpdate(document, username));
+    }
+
+    /**
      * 提交公文申请
      * 将公文状态从“草稿 (0)”变更为“审核中 (1)”
      * 权限要求：document:edit
      */
     @PostMapping("/submit/{id}")
-    @CheckPermission("document:edit")
+    @CheckPermission(value = {"document:edit","document:edit:myself"},logical =  Logical.OR)
     public Result<Boolean> submit(@PathVariable Integer id) {
         return Result.success("已成功提交审核", documentService.submit(id));
     }
@@ -152,6 +165,16 @@ public class DocumentController {
     @DeleteMapping("/delete/{id}")
     @CheckPermission("document:delete")
     public Result<Boolean> delete(@PathVariable Integer id) {
+        return Result.success("删除成功", documentService.deleteById(id));
+    }
+
+    /**
+     * 物理删除个人公文记录
+     * 权限要求：document:delete:myself
+     */
+    @DeleteMapping("/delete/myself/{id}")
+    @CheckPermission("document:delete:myself")
+    public Result<Boolean> deleteMyDocument(@PathVariable Integer id) {
         return Result.success("删除成功", documentService.deleteById(id));
     }
 }

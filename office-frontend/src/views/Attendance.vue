@@ -148,14 +148,23 @@ const now = new Date()
 const statsMonth = ref(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
 const monthStats = ref({})
 
-const statsList = computed(() => [
-  { label: '正常', value: monthStats.value.normal || 0, color: '#67c23a' },
-  { label: '迟到', value: monthStats.value.late || 0, color: '#e6a23c' },
-  { label: '早退', value: monthStats.value.earlyLeave || 0, color: '#f56c6c' },
-  { label: '缺卡', value: monthStats.value.missing || 0, color: '#909399' },
-  { label: '请假', value: monthStats.value.leave || 0, color: '#409eff' },
-  { label: '出勤天数', value: monthStats.value.totalDays || 0, color: '#333' }
-])
+const statsList = computed(() => {
+  const normal = monthStats.value[1] || 0
+  const late = monthStats.value[2] || 0
+  const early = monthStats.value[3] || 0
+  const absent = monthStats.value[4] || 0
+  const leave = monthStats.value[5] || 0
+  const attendanceDays = normal + late + early // 出勤天数：正常、迟到、早退
+  
+  return [
+    { label: '正常', value: normal, color: '#67c23a' },
+    { label: '迟到', value: late, color: '#e6a23c' },
+    { label: '早退', value: early, color: '#f56c6c' },
+    { label: '缺卡', value: absent, color: '#909399' },
+    { label: '请假', value: leave, color: '#409eff' },
+    { label: '出勤天数', value: attendanceDays, color: '#333' }
+  ]
+})
 
 const loadMonthStats = async () => {
   if (!statsMonth.value) return
@@ -191,7 +200,7 @@ const statusText = (status) => {
 }
 
 const statusTagType = (status) => {
-  const map = { 1: 'success', 2: 'warning', 3: 'danger', 4: 'info', 5: '' }
+  const map = { 1: 'success', 2: 'warning', 3: 'danger', 4: 'info', 5: 'primary' }
   return map[status] || 'info'
 }
 

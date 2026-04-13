@@ -88,8 +88,30 @@ public class ScheduleController {
      * 权限要求：schedule:delete
      */
     @DeleteMapping("/delete/{id}")
-    @CheckPermission("schedule:delete")
+    @CheckPermission(value = "schedule:delete")
     public Result<Boolean> delete(@PathVariable Integer id) {
+        return Result.success("日程删除成功", scheduleService.deleteById(id));
+    }
+
+    /**
+     * 保存或修改个人日程
+     * 权限要求：schedule:create:myself 或 schedule:edit:myself
+     */
+    @PostMapping("/save/myself")
+    @CheckPermission(value = {"schedule:create:myself", "schedule:edit:myself"}, logical = Logical.OR)
+    public Result<Boolean> saveMySchedule(@RequestBody Schedule schedule,
+                                @RequestHeader("Authorization") String token) {
+        String username = jwtUtils.getUsernameFromToken(token);
+        return Result.success("日程保存成功", scheduleService.saveOrUpdate(schedule, username));
+    }
+
+    /**
+     * 删除个人日程
+     * 权限要求：schedule:delete：myself
+     */
+    @DeleteMapping("/delete/myself/{id}")
+    @CheckPermission(value = "schedule:delete:myself")
+    public Result<Boolean> deleteMySchedule(@PathVariable Integer id) {
         return Result.success("日程删除成功", scheduleService.deleteById(id));
     }
 }

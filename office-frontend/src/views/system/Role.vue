@@ -63,6 +63,7 @@
         show-checkbox
         node-key="id"
         default-expand-all
+        :check-strictly="true"
       />
       <template #footer>
         <el-button @click="permDialogVisible = false">取消</el-button>

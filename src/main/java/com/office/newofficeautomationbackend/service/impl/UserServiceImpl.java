@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.office.newofficeautomationbackend.dto.LoginResponseDTO;
 import com.office.newofficeautomationbackend.dto.UserDTO;
 import com.office.newofficeautomationbackend.entity.Permission;
+import com.office.newofficeautomationbackend.common.BusinessException;
 import com.office.newofficeautomationbackend.service.DepartmentService;
 import com.office.newofficeautomationbackend.service.RoleService;
 import com.office.newofficeautomationbackend.utils.JwtUtils;
@@ -15,6 +16,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class UserServiceImpl implements UserService {
+
+    @Value("${app.default-password:123456}")
+    private String defaultPassword;
 
     @Autowired
     private UserMapper userMapper;
@@ -341,5 +346,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return userDTO;
+    }
+
+    //重置用户密码
+    @Override
+    public boolean resetPwdById(Integer id, String newPassword) {
+        User user = userMapper.getById(id);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        // 密码为空时使用配置的默认密码
+        if (newPassword == null || newPassword.isBlank()) {
+            newPassword = defaultPassword;
+        } else if (newPassword.length() < 6 || newPassword.length() > 20) {
+            throw new BusinessException("密码长度必须在6-20之间");
+        }
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        // 复用已有的 updatePassword Mapper 方法，避免重复 SQL
+        return userMapper.updatePassword(id, encodedPassword) > 0;
     }
 }

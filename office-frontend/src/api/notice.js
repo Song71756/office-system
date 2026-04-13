@@ -26,6 +26,7 @@ export function saveNotice(data) {
   })
 }
 
+
 // 删除公告
 export function deleteNotice(id) {
   return request({

@@ -85,3 +85,15 @@ export function updatePassword(data) {
     data
   })
 }
+
+// 重置用户密码
+export function resetPassword(userId, newPassword) {
+  return request({
+    url: '/user/resetpwd',
+    method: 'put',
+    data: {
+      id: userId,
+      newPassword
+    }
+  })
+}

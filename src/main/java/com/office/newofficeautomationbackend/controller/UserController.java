@@ -3,10 +3,7 @@ package com.office.newofficeautomationbackend.controller;
 import com.office.newofficeautomationbackend.common.Result;
 import com.office.newofficeautomationbackend.common.annotation.CheckPermission;
 import com.office.newofficeautomationbackend.common.annotation.Logical;
-import com.office.newofficeautomationbackend.dto.LoginDTO;
-import com.office.newofficeautomationbackend.dto.LoginResponseDTO;
-import com.office.newofficeautomationbackend.dto.RegisterDTO;
-import com.office.newofficeautomationbackend.dto.UserDTO;
+import com.office.newofficeautomationbackend.dto.*;
 import com.office.newofficeautomationbackend.entity.User;
 import com.office.newofficeautomationbackend.config.LoginInterceptor;
 import com.office.newofficeautomationbackend.service.UserService;
@@ -241,5 +238,12 @@ public class UserController {
     @CheckPermission("user:delete")
     public Result<Boolean> delete(@PathVariable Integer id) {
         return Result.success(userService.deleteById(id));
+    }
+
+    //管理员重置用户密码（用户忘记密码无法修改）
+    @PutMapping("/resetpwd")
+    @CheckPermission("user:edit")
+    public Result<Boolean> resetPwdById(@RequestBody @Valid ResetPwdDTO reset) {
+        return Result.success(userService.resetPwdById(reset.getId(), reset.getNewPassword()));
     }
 }
