@@ -169,7 +169,7 @@ http://localhost:8080/swagger-ui.html
 
 ## 项目文档
 
-- [系统架构说明](./docs/系统架构说明_更新版.md) - 详细技术架构文档
+- [系统架构说明](./docs/Architecture.md) - 详细技术架构文档
 
 ---
 

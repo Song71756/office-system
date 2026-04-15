@@ -45,9 +45,10 @@
 
 - 用户注册、登录、登出
 - 个人信息查看与修改
-- 密码修改
+- 密码修改（本人修改 + 管理员重置）
 - 用户分页列表 + 模糊搜索
 - 角色分配
+- 管理员重置用户密码
 
 **后端接口：** `/role/*`
 
@@ -207,10 +208,10 @@ src/main/java/com/office/newofficeautomationbackend/
 ├── common/                                         # 公共模块
 │   ├── Result.java                               # 统一响应封装
 │   ├── ResultCode.java                           # 响应状态码
+│   ├── BusinessException.java                    # 自定义业务异常
 │   ├── annotation/
 │   │   ├── CheckPermission.java                  # 权限注解
 │   │   └── Logical.java                         # 权限逻辑（AND/OR）
-│   └── icons/                                    # 图标配置
 ├── config/                                        # 配置模块
 │   ├── GlobalExceptionHandler.java               # 全局异常处理
 │   ├── LoginInterceptor.java                     # 登录拦截器
@@ -230,6 +231,13 @@ src/main/java/com/office/newofficeautomationbackend/
 │   ├── StatsController.java
 │   └── UserController.java
 ├── dto/                                           # 数据传输对象
+│   ├── LoginDTO.java                             # 登录请求
+│   ├── LoginResponseDTO.java                     # 登录响应
+│   ├── RegisterDTO.java                          # 注册请求
+│   ├── ResetPwdDTO.java                          # 管理员重置密码
+│   ├── ScheduleDTO.java                          # 日程分页响应
+│   ├── UserDTO.java                              # 用户详情
+│   └── DashboardDTO.java                         # 看板数据
 ├── entity/                                        # 实体类
 │   ├── Attendance.java
 │   ├── Department.java
@@ -346,7 +354,20 @@ public Result<?> handleException(Exception e) {
 
 **源码位置**：`config/GlobalExceptionHandler.java`
 
-### 5.5 视角隔离 - 数据安全设计
+### 5.5 自定义业务异常 - `BusinessException`
+
+用于在业务逻辑中抛出可预期的错误，由全局异常处理器统一捕获并返回友好提示：
+
+```java
+// 在业务代码中抛出
+if (user == null) {
+    throw new BusinessException("用户不存在");
+}
+```
+
+**源码位置**：`common/BusinessException.java`
+
+### 5.6 视角隔离 - 数据安全设计
 
 以 **公文系统** 为典型：
 
@@ -358,7 +379,7 @@ public Result<?> handleException(Exception e) {
 
 实现方式：在 Service 层根据用户角色动态拼接查询条件。
 
-### 5.6 物理分页 - PageHelper
+### 5.7 物理分页 - PageHelper
 
 使用 PageHelper 实现高效的数据库物理分页：
 
@@ -470,5 +491,5 @@ Authorization: Bearer <token>
 
 ---
 
-*文档更新时间：2026-04-12*
+*文档更新时间：2026-04-16*
 *作者：谦渡尘*
