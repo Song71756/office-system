@@ -26,7 +26,7 @@ public class Permission {
     private String permissionName;
 
     /**
-     * 权限类型 (如 M:目录, C:菜单, F:按钮)
+     * 权限类型 (如 1-菜单，2-按钮，3-接口)
      */
     private String type;
 
